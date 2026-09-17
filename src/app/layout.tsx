@@ -21,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jetbrainsMono.variable} dark h-full`}>
-      <body className="min-h-full bg-black text-white antialiased font-mono overflow-x-hidden">
+    <html lang="en" className={`${jetbrainsMono.variable} dark h-full overflow-hidden`}>
+      <body className="h-full w-full bg-black text-white antialiased font-mono overflow-hidden select-none fixed inset-0">
         {children}
       </body>
     </html>

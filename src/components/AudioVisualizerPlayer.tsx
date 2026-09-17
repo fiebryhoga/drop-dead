@@ -192,7 +192,7 @@ export const AudioVisualizerPlayer: React.FC = () => {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-black text-white flex flex-col items-center justify-end pb-10 sm:pb-16 px-4 sm:px-8 font-mono select-none overflow-hidden"
+      className="fixed inset-0 h-[100dvh] w-full bg-black text-white flex flex-col items-center justify-between sm:justify-end pb-8 sm:pb-16 pt-6 sm:pt-0 px-4 sm:px-8 font-mono select-none overflow-hidden touch-none"
       style={{
         perspective: "1000px",
       }}
@@ -237,10 +237,10 @@ export const AudioVisualizerPlayer: React.FC = () => {
       />
 
       {/* Main Display Section with Holographic 3D Floating Transform */}
-      <main className="w-full max-w-3xl flex flex-col items-center justify-end z-20 gap-4 sm:gap-6 relative">
+      <main className="w-full max-w-3xl flex-1 sm:flex-initial flex flex-col items-center justify-center sm:justify-end z-20 gap-3 sm:gap-6 relative">
         {/* Big ASCII Text Display (3D Floating Foreground) */}
         <div
-          className="w-full flex flex-col items-center justify-center min-h-[140px] sm:min-h-[180px] z-20 transition-transform duration-75 ease-out"
+          className="w-full flex flex-col items-center justify-center min-h-[110px] sm:min-h-[180px] z-20 transition-transform duration-75 ease-out"
           style={{
             transform: `translate3d(${x * 26}px, ${y * 20}px, 60px) rotateX(${rotateX * 1.15}deg) rotateY(${rotateY * 1.15}deg)`,
             transformStyle: "preserve-3d",
@@ -258,7 +258,7 @@ export const AudioVisualizerPlayer: React.FC = () => {
         {/* Center Mode Switching (Visualizer vs Full Synced Lyrics) */}
         {activeTab === "visualizer" ? (
           <div
-            className="w-full flex flex-col items-center gap-5 my-2 z-20 transition-transform duration-75 ease-out"
+            className="w-full flex flex-col items-center gap-3 sm:gap-5 my-1 sm:my-2 z-20 transition-transform duration-75 ease-out"
             style={{
               transform: `translate3d(${x * 12}px, ${y * 10}px, 25px) rotateX(${rotateX * 0.6}deg) rotateY(${rotateY * 0.6}deg)`,
             }}
@@ -268,10 +268,10 @@ export const AudioVisualizerPlayer: React.FC = () => {
               <AsciiWaveform
                 analyserNode={analyserRef.current}
                 isPlaying={isPlaying}
-                barCount={42}
-                barWidth={5}
+                barCount={40}
+                barWidth={4}
                 barGap={3}
-                height={76}
+                height={64}
                 className="w-full"
               />
             </div>

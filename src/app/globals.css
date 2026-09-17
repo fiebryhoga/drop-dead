@@ -9,12 +9,18 @@
   --font-mono: var(--font-mono), monospace;
 }
 
+html,
 body {
   background-color: #000000;
   color: #ffffff;
   font-family: var(--font-mono), monospace;
   margin: 0;
   padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom scrollbar hidden for sleek terminal aesthetic */
