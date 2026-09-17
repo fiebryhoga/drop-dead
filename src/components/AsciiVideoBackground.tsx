@@ -80,8 +80,9 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
     const cellHeight = 10;
 
     const updateDimensions = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      // Add overscan margins so 3D rotation and translation never expose canvas borders
+      const width = Math.ceil(window.innerWidth * 1.3);
+      const height = Math.ceil(window.innerHeight * 1.3);
 
       const cols = Math.ceil(width / cellWidth);
       const rows = Math.ceil(height / cellHeight);
@@ -89,7 +90,7 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
       offscreen.width = cols;
       offscreen.height = rows;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = `${width}px`;
@@ -102,8 +103,8 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
     window.addEventListener("resize", updateDimensions);
 
     const render = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const width = Math.ceil(window.innerWidth * 1.3);
+      const height = Math.ceil(window.innerHeight * 1.3);
       const cols = offscreen.width;
       const rows = offscreen.height;
 
@@ -188,7 +189,7 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 w-full h-full pointer-events-none select-none z-0 transition-opacity duration-500 overflow-hidden flex items-center justify-center ${className}`}
+      className={`absolute inset-0 w-full h-full pointer-events-none select-none z-0 transition-opacity duration-500 overflow-hidden flex items-center justify-center ${className}`}
       style={{ opacity: fadeOpacity }}
     >
       {/* Hidden Video Source */}
@@ -205,7 +206,7 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
       {/* Fullscreen ASCII Canvas */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 w-full h-full object-cover"
+        className="absolute w-full h-full object-cover"
       />
 
       {/* Subtle darkening overlay */}

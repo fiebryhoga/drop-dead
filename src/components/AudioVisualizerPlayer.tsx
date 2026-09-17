@@ -197,11 +197,12 @@ export const AudioVisualizerPlayer: React.FC = () => {
         perspective: "1000px",
       }}
     >
-      {/* Real-time Fullscreen ASCII Video Background with 3D Parallax Depth */}
+      {/* Real-time Fullscreen ASCII Video Background with 3D Parallax Depth (Overscaled so edges never cut off) */}
       <div
-        className="fixed inset-0 pointer-events-none transition-transform duration-75 ease-out"
+        className="fixed -inset-16 sm:-inset-24 pointer-events-none transition-transform duration-75 ease-out overflow-hidden flex items-center justify-center"
         style={{
-          transform: `translate3d(${-x * 18}px, ${-y * 14}px, -30px) rotateX(${rotateX * 0.25}deg) rotateY(${rotateY * 0.25}deg)`,
+          transform: `scale(1.18) translate3d(${-x * 22}px, ${-y * 18}px, -40px) rotateX(${rotateX * 0.22}deg) rotateY(${rotateY * 0.22}deg)`,
+          transformOrigin: "center center",
         }}
       >
         <AsciiVideoBackground

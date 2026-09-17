@@ -80,7 +80,7 @@ export const RetroProgressBar: React.FC<RetroProgressBarProps> = ({
         <button
           type="button"
           onClick={() => onSeek(0)}
-          className="text-[10px] tracking-wider px-2 py-0.5 rounded border border-white/20 hover:border-white text-neutral-400 hover:text-white transition-all bg-white/5 flex items-center gap-1 active:scale-95"
+          className="hidden sm:flex text-[10px] tracking-wider px-2 py-0.5 rounded border border-white/20 hover:border-white text-neutral-400 hover:text-white transition-all bg-white/5 items-center gap-1 active:scale-95"
           title="Restart from 00:00"
         >
           <span>↻ RESTART</span>
