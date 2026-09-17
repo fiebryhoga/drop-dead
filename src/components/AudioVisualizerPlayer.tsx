@@ -9,8 +9,12 @@ import { RetroControls } from "@/components/RetroControls";
 import { SyncedLyrics } from "@/components/SyncedLyrics";
 import { CRTOverlay } from "@/components/CRTOverlay";
 import { AsciiVideoBackground } from "@/components/AsciiVideoBackground";
+import { useDeviceTilt } from "@/hooks/useDeviceTilt";
 
 export const AudioVisualizerPlayer: React.FC = () => {
+  // 3D Parallax Tilt Hook (Gyroscope & Mouse)
+  const { x, y, rotateX, rotateY } = useDeviceTilt(14);
+
   // Audio state
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -187,13 +191,25 @@ export const AudioVisualizerPlayer: React.FC = () => {
   }, [isPlaying, duration, currentTime]);
 
   return (
-    <div className="relative min-h-screen w-full bg-black text-white flex flex-col items-center justify-end pb-10 sm:pb-16 px-4 sm:px-8 font-mono select-none overflow-x-hidden">
-      {/* Real-time Fullscreen ASCII Video Background (Starts at 19s) */}
-      <AsciiVideoBackground
-        currentTime={currentTime}
-        isPlaying={isPlaying}
-        videoStartTime={19.0}
-      />
+    <div
+      className="relative min-h-screen w-full bg-black text-white flex flex-col items-center justify-end pb-10 sm:pb-16 px-4 sm:px-8 font-mono select-none overflow-hidden"
+      style={{
+        perspective: "1000px",
+      }}
+    >
+      {/* Real-time Fullscreen ASCII Video Background with 3D Parallax Depth */}
+      <div
+        className="fixed inset-0 pointer-events-none transition-transform duration-75 ease-out"
+        style={{
+          transform: `translate3d(${-x * 18}px, ${-y * 14}px, -30px) rotateX(${rotateX * 0.25}deg) rotateY(${rotateY * 0.25}deg)`,
+        }}
+      >
+        <AsciiVideoBackground
+          currentTime={currentTime}
+          isPlaying={isPlaying}
+          videoStartTime={19.0}
+        />
+      </div>
 
       {/* CRT Overlay Effect */}
       <CRTOverlay enabled={crtEnabled} />
@@ -219,37 +235,48 @@ export const AudioVisualizerPlayer: React.FC = () => {
         }}
       />
 
-      {/* Main Display Section */}
+      {/* Main Display Section with Holographic 3D Floating Transform */}
       <main className="w-full max-w-3xl flex flex-col items-center justify-end z-20 gap-4 sm:gap-6 relative">
-        {/* Big ASCII Text Display (Matching screenshot) */}
-        <div className="w-full flex flex-col items-center justify-center min-h-[140px] sm:min-h-[180px] z-20">
+        {/* Big ASCII Text Display (3D Floating Foreground) */}
+        <div
+          className="w-full flex flex-col items-center justify-center min-h-[140px] sm:min-h-[180px] z-20 transition-transform duration-75 ease-out"
+          style={{
+            transform: `translate3d(${x * 26}px, ${y * 20}px, 60px) rotateX(${rotateX * 1.15}deg) rotateY(${rotateY * 1.15}deg)`,
+            transformStyle: "preserve-3d",
+          }}
+        >
           <AsciiTextCanvas
             text={activeBannerText}
             subText={activeSubText}
-            dotSize={6}
-            gap={2}
+            dotSize={4.5}
+            gap={1.6}
             glow={true}
-            color="#FFFFFF"
-            scanlines={true}
           />
         </div>
 
         {/* Center Mode Switching (Visualizer vs Full Synced Lyrics) */}
         {activeTab === "visualizer" ? (
-          <div className="w-full flex flex-col items-center gap-5 my-2">
+          <div
+            className="w-full flex flex-col items-center gap-5 my-2 z-20 transition-transform duration-75 ease-out"
+            style={{
+              transform: `translate3d(${x * 12}px, ${y * 10}px, 25px) rotateX(${rotateX * 0.6}deg) rotateY(${rotateY * 0.6}deg)`,
+            }}
+          >
             {/* Audio Waveform Spectrum Analyzer */}
-            <AsciiWaveform
-              analyserNode={analyserRef.current}
-              isPlaying={isPlaying}
-              barCount={42}
-              barWidth={5}
-              barGap={3}
-              height={76}
-              className="w-full"
-            />
+            <div className="w-full flex justify-center">
+              <AsciiWaveform
+                analyserNode={analyserRef.current}
+                isPlaying={isPlaying}
+                barCount={42}
+                barWidth={5}
+                barGap={3}
+                height={76}
+                className="w-full"
+              />
+            </div>
           </div>
         ) : (
-          <div className="w-full my-2">
+          <div className="w-full my-2 z-20">
             <SyncedLyrics
               lyrics={DROP_DEAD_LYRICS}
               currentTime={currentTime}
@@ -261,30 +288,38 @@ export const AudioVisualizerPlayer: React.FC = () => {
           </div>
         )}
 
-        {/* Retro Progress Bar */}
-        <RetroProgressBar
-          currentTime={currentTime}
-          duration={duration}
-          onSeek={handleSeek}
-        />
+        {/* Player Bottom Control Deck Container with 3D Holographic Tilt */}
+        <div
+          className="w-full max-w-xl flex flex-col items-center gap-3 px-2 z-20 transition-transform duration-75 ease-out"
+          style={{
+            transform: `translate3d(${x * 8}px, ${y * 6}px, 15px) rotateX(${rotateX * 0.4}deg) rotateY(${rotateY * 0.4}deg)`,
+          }}
+        >
+          {/* Retro Progress Bar */}
+          <RetroProgressBar
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
+          />
 
-        {/* Retro Player Controls */}
-        <RetroControls
-          isPlaying={isPlaying}
-          onPlayPause={togglePlayPause}
-          onSeekRelative={seekRelative}
-          onJumpHighlight={handleRestart}
-          playbackRate={playbackRate}
-          onCycleSpeed={cycleSpeed}
-          isLoop={isLoop}
-          onToggleLoop={() => setIsLoop(!isLoop)}
-          volume={volume}
-          onVolumeChange={handleVolumeChange}
-          isMuted={isMuted}
-          onToggleMute={toggleMute}
-          isFullscreen={isFullscreen}
-          onToggleFullscreen={toggleFullscreen}
-        />
+          {/* Retro Player Controls */}
+          <RetroControls
+            isPlaying={isPlaying}
+            onPlayPause={togglePlayPause}
+            onSeekRelative={seekRelative}
+            onJumpHighlight={handleRestart}
+            playbackRate={playbackRate}
+            onCycleSpeed={cycleSpeed}
+            isLoop={isLoop}
+            onToggleLoop={() => setIsLoop(!isLoop)}
+            volume={volume}
+            onVolumeChange={handleVolumeChange}
+            isMuted={isMuted}
+            onToggleMute={toggleMute}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={toggleFullscreen}
+          />
+        </div>
       </main>
     </div>
   );

@@ -6,16 +6,18 @@ interface AsciiVideoBackgroundProps {
   currentTime: number;
   isPlaying: boolean;
   videoStartTime?: number; // 19.0s
+  videoEndTime?: number;   // 40.0s (fades to full black)
   className?: string;
 }
 
-// ASCII character luminance ramp matching the screenshot (dots, dashes, letters, dense 8s and bs)
+// ASCII character luminance ramp
 const ASCII_CHARS = "   ..::--++==iissbb88@@";
 
 export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
   currentTime,
   isPlaying,
   videoStartTime = 19.0,
+  videoEndTime = 40.0,
   className = "",
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -23,7 +25,16 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
 
-  const isVideoActive = currentTime >= videoStartTime;
+  // Active between 19s and 40s (smoothly fades out from 40s to 42.5s)
+  const isVideoActive = currentTime >= videoStartTime && currentTime < videoEndTime + 2.5;
+
+  // Calculate dynamic fade-out opacity from 40s to full black
+  let fadeOpacity = 0;
+  if (currentTime >= videoStartTime && currentTime < videoEndTime) {
+    fadeOpacity = 1;
+  } else if (currentTime >= videoEndTime && currentTime < videoEndTime + 2.5) {
+    fadeOpacity = Math.max(0, 1 - (currentTime - videoEndTime) / 2.5);
+  }
 
   // Sync video play/pause and time with audio
   useEffect(() => {
@@ -97,7 +108,6 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
       const rows = offscreen.height;
 
       if (isVideoActive && video.readyState >= 2) {
-        // Draw video to offscreen canvas covering full screen aspect ratio
         const vWidth = video.videoWidth || 640;
         const vHeight = video.videoHeight || 360;
         const vAspect = vWidth / vHeight;
@@ -122,7 +132,7 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
 
         const imgData = offscreenCtx.getImageData(0, 0, cols, rows).data;
 
-        // Clear display canvas
+        // Clear display canvas with black
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, width, height);
 
@@ -140,9 +150,7 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
 
             const lum = 0.299 * red + 0.587 * green + 0.114 * blue;
 
-            // Threshold out dark hair / deep background shadows
             if (lum > 18) {
-              // Gamma curve boost for skin tones and midtones (makes face luminous white)
               const normalized = Math.max(0, Math.min(1, (lum - 12) / 220));
               const boosted = Math.pow(normalized, 0.5) * 255;
 
@@ -153,9 +161,8 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
               const char = ASCII_CHARS[charIdx];
 
               if (char !== " ") {
-                // Bright, crisp white phosphor glow for skin and face
-                const alpha = Math.min(1, Math.max(0.6, boosted / 180));
-                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                const alpha = Math.min(0.72, Math.max(0.28, boosted / 230));
+                ctx.fillStyle = `rgba(240, 245, 255, ${alpha})`;
 
                 ctx.fillText(char, c * cellWidth, r * cellHeight);
               }
@@ -181,9 +188,8 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 w-full h-full pointer-events-none select-none z-0 transition-opacity duration-700 overflow-hidden flex items-center justify-center ${
-        isVideoActive ? "opacity-100" : "opacity-0"
-      } ${className}`}
+      className={`fixed inset-0 w-full h-full pointer-events-none select-none z-0 transition-opacity duration-500 overflow-hidden flex items-center justify-center ${className}`}
+      style={{ opacity: fadeOpacity }}
     >
       {/* Hidden Video Source */}
       <video
@@ -201,6 +207,9 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
         ref={canvasRef}
         className="fixed inset-0 w-full h-full object-cover"
       />
+
+      {/* Subtle darkening overlay */}
+      <div className="absolute inset-0 bg-black/25 pointer-events-none" />
     </div>
   );
 };

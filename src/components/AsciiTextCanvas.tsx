@@ -39,12 +39,15 @@ export const AsciiTextCanvas: React.FC<AsciiTextCanvasProps> = ({
     const mainWidth = mainMatrix[0].length * charPixelStep;
     const mainHeight = mainMatrix.length * charPixelStep;
 
-    const subWidth = subMatrix ? subMatrix[0].length * (dotSize * 0.7 + gap) : 0;
-    const subHeight = subMatrix ? subMatrix.length * (dotSize * 0.7 + gap) : 0;
+    const sDotSize = Math.max(2, Math.round(dotSize * 0.42));
+    const sGap = Math.max(1, gap * 0.7);
+    const sCharStep = sDotSize + sGap;
+    const subWidth = subMatrix ? subMatrix[0].length * sCharStep : 0;
+    const subHeight = subMatrix ? subMatrix.length * sCharStep : 0;
 
     const padding = 20;
     const totalWidth = Math.max(mainWidth, subWidth) + padding * 2;
-    const totalHeight = mainHeight + (subMatrix ? subHeight + 16 : 0) + padding * 2;
+    const totalHeight = mainHeight + (subMatrix ? subHeight + 12 : 0) + padding * 2;
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = totalWidth * dpr;
@@ -84,13 +87,11 @@ export const AsciiTextCanvas: React.FC<AsciiTextCanvasProps> = ({
       }
     }
 
-    // Draw Subtext (if any, e.g. "Olivia Rodrigo")
+    // Draw Subtext (e.g. "Olivia Rodrigo" scaled smaller)
     if (subMatrix) {
-      const sDotSize = Math.max(2, Math.round(dotSize * 0.6));
-      const sCharStep = sDotSize + gap;
       const sActualWidth = subMatrix[0].length * sCharStep;
       const sStartX = (totalWidth - sActualWidth) / 2;
-      const sStartY = startY + mainHeight + 14;
+      const sStartY = startY + mainHeight + 12;
 
       for (let r = 0; r < subMatrix.length; r++) {
         for (let c = 0; c < subMatrix[r].length; c++) {
@@ -99,11 +100,11 @@ export const AsciiTextCanvas: React.FC<AsciiTextCanvasProps> = ({
             const y = sStartY + r * sCharStep;
 
             if (glow) {
-              ctx.shadowColor = "rgba(220, 220, 255, 0.8)";
-              ctx.shadowBlur = 4;
+              ctx.shadowColor = "rgba(200, 215, 240, 0.6)";
+              ctx.shadowBlur = 3;
             }
 
-            ctx.fillStyle = "rgba(220, 230, 245, 0.9)";
+            ctx.fillStyle = "rgba(200, 215, 235, 0.8)";
             ctx.fillRect(x, y, sDotSize, sDotSize);
           }
         }
@@ -112,10 +113,13 @@ export const AsciiTextCanvas: React.FC<AsciiTextCanvasProps> = ({
   }, [text, subText, dotSize, gap, glow, color, scanlines]);
 
   return (
-    <div className={`flex items-center justify-center overflow-x-auto select-none ${className}`}>
+    <div
+      key={`${text}-${subText || ""}`}
+      className={`flex items-center justify-center overflow-x-auto select-none animate-lyric-smooth ${className}`}
+    >
       <canvas
         ref={canvasRef}
-        className="max-w-full drop-shadow-[0_0_12px_rgba(255,255,255,0.4)] transition-all duration-300"
+        className="max-w-full drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]"
       />
     </div>
   );
