@@ -8,7 +8,7 @@ import { RetroProgressBar } from "@/components/RetroProgressBar";
 import { RetroControls } from "@/components/RetroControls";
 import { SyncedLyrics } from "@/components/SyncedLyrics";
 import { CRTOverlay } from "@/components/CRTOverlay";
-import { Sparkles, Tv, Upload, Radio, FileMusic } from "lucide-react";
+import { AsciiVideoBackground } from "@/components/AsciiVideoBackground";
 
 export const AudioVisualizerPlayer: React.FC = () => {
   // Audio state
@@ -18,8 +18,8 @@ export const AudioVisualizerPlayer: React.FC = () => {
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(SONG_METADATA.defaultStartTime); // 109s (01:49)
-  const [duration, setDuration] = useState(210); // fallback duration until metadata loads
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(48); // 48s trimmed audio
   const [playbackRate, setPlaybackRate] = useState(1.0);
   const [isLoop, setIsLoop] = useState(false);
   const [volume, setVolume] = useState(1.0);
@@ -30,7 +30,6 @@ export const AudioVisualizerPlayer: React.FC = () => {
   const [audioSource, setAudioSource] = useState<string>(SONG_METADATA.audioSrc);
   const [songTitle, setSongTitle] = useState(SONG_METADATA.title);
   const [artistName, setArtistName] = useState(SONG_METADATA.artist);
-  const [isInitialReady, setIsInitialReady] = useState(false);
 
   // Initialize Web Audio API Analyser
   const setupAudioContext = useCallback(() => {
@@ -72,11 +71,6 @@ export const AudioVisualizerPlayer: React.FC = () => {
       setIsPlaying(false);
     } else {
       try {
-        // If currentTime was initial 109s, ensure audio element starts at 109s
-        if (!isInitialReady && audioRef.current.currentTime === 0) {
-          audioRef.current.currentTime = SONG_METADATA.defaultStartTime;
-          setIsInitialReady(true);
-        }
         await audioRef.current.play();
         setIsPlaying(true);
       } catch (err) {
@@ -85,11 +79,11 @@ export const AudioVisualizerPlayer: React.FC = () => {
     }
   };
 
-  // Jump directly to the 01:49 Highlight
-  const jumpToHighlight = () => {
+  // Restart from 00:00
+  const handleRestart = () => {
     if (!audioRef.current) return;
-    audioRef.current.currentTime = SONG_METADATA.defaultStartTime;
-    setCurrentTime(SONG_METADATA.defaultStartTime);
+    audioRef.current.currentTime = 0;
+    setCurrentTime(0);
     if (!isPlaying) {
       togglePlayPause();
     }
@@ -157,7 +151,6 @@ export const AudioVisualizerPlayer: React.FC = () => {
       setSongTitle(file.name.replace(/\.[^/.]+$/, ""));
       setArtistName("Custom Audio");
       setIsPlaying(false);
-      setIsInitialReady(true);
     }
   };
 
@@ -168,10 +161,9 @@ export const AudioVisualizerPlayer: React.FC = () => {
     return currentTime >= l.time && currentTime < endTime;
   });
 
-  // Calculate the ASCII Banner title to show:
-  // If playing near or after 01:49, show the punchy lyric banner keyword; otherwise show Song Title
-  const activeBannerText = currentLyric?.asciiBanner || "DROP DEAD";
-  const activeSubText = currentLyric ? currentLyric.text : artistName;
+  // Current active text to render on ASCII Canvas
+  const activeBannerText = currentLyric?.text || songTitle;
+  const activeSubText = currentLyric?.subText || "";
 
   // Keyboard shortcut (Space = Play/Pause, ArrowLeft/Right = Seek)
   useEffect(() => {
@@ -195,7 +187,14 @@ export const AudioVisualizerPlayer: React.FC = () => {
   }, [isPlaying, duration, currentTime]);
 
   return (
-    <div className="relative min-h-screen w-full bg-black text-white flex flex-col items-center justify-between p-4 sm:p-8 font-mono select-none overflow-x-hidden">
+    <div className="relative min-h-screen w-full bg-black text-white flex flex-col items-center justify-end pb-10 sm:pb-16 px-4 sm:px-8 font-mono select-none overflow-x-hidden">
+      {/* Real-time Fullscreen ASCII Video Background (Starts at 19s) */}
+      <AsciiVideoBackground
+        currentTime={currentTime}
+        isPlaying={isPlaying}
+        videoStartTime={19.0}
+      />
+
       {/* CRT Overlay Effect */}
       <CRTOverlay enabled={crtEnabled} />
 
@@ -207,12 +206,7 @@ export const AudioVisualizerPlayer: React.FC = () => {
         loop={isLoop}
         onLoadedMetadata={() => {
           if (audioRef.current) {
-            setDuration(audioRef.current.duration || 210);
-            // Default initial cue to 01:49 as requested
-            if (!isInitialReady) {
-              audioRef.current.currentTime = SONG_METADATA.defaultStartTime;
-              setCurrentTime(SONG_METADATA.defaultStartTime);
-            }
+            setDuration(audioRef.current.duration || 48);
           }
         }}
         onTimeUpdate={() => {
@@ -226,9 +220,9 @@ export const AudioVisualizerPlayer: React.FC = () => {
       />
 
       {/* Main Display Section */}
-      <main className="w-full max-w-3xl my-auto flex flex-col items-center justify-center py-6 sm:py-10 z-20 gap-6">
+      <main className="w-full max-w-3xl flex flex-col items-center justify-end z-20 gap-4 sm:gap-6 relative">
         {/* Big ASCII Text Display (Matching screenshot) */}
-        <div className="w-full flex flex-col items-center justify-center min-h-[140px] sm:min-h-[180px]">
+        <div className="w-full flex flex-col items-center justify-center min-h-[140px] sm:min-h-[180px] z-20">
           <AsciiTextCanvas
             text={activeBannerText}
             subText={activeSubText}
@@ -243,22 +237,6 @@ export const AudioVisualizerPlayer: React.FC = () => {
         {/* Center Mode Switching (Visualizer vs Full Synced Lyrics) */}
         {activeTab === "visualizer" ? (
           <div className="w-full flex flex-col items-center gap-5 my-2">
-            {/* Live Synchronized Current Line Subtitle */}
-            <div className="min-h-[36px] flex items-center justify-center text-center px-4">
-              <p className="text-sm sm:text-base text-neutral-300 font-medium tracking-wide drop-shadow-[0_0_8px_rgba(255,255,255,0.7)] animate-fade-in">
-                {currentLyric ? (
-                  <>
-                    <span className="text-yellow-400 mr-2">&bull;</span>
-                    {currentLyric.text}
-                  </>
-                ) : (
-                  <span className="text-neutral-500 italic">
-                    Press Space or Play to start listening from 01:49
-                  </span>
-                )}
-              </p>
-            </div>
-
             {/* Audio Waveform Spectrum Analyzer */}
             <AsciiWaveform
               analyserNode={analyserRef.current}
@@ -287,7 +265,6 @@ export const AudioVisualizerPlayer: React.FC = () => {
         <RetroProgressBar
           currentTime={currentTime}
           duration={duration}
-          highlightTime={SONG_METADATA.defaultStartTime} // 109s (01:49)
           onSeek={handleSeek}
         />
 
@@ -296,7 +273,7 @@ export const AudioVisualizerPlayer: React.FC = () => {
           isPlaying={isPlaying}
           onPlayPause={togglePlayPause}
           onSeekRelative={seekRelative}
-          onJumpHighlight={jumpToHighlight}
+          onJumpHighlight={handleRestart}
           playbackRate={playbackRate}
           onCycleSpeed={cycleSpeed}
           isLoop={isLoop}

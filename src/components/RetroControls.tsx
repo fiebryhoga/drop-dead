@@ -48,15 +48,15 @@ export const RetroControls: React.FC<RetroControlsProps> = ({
     <div className="flex flex-col items-center gap-4 w-full max-w-xl font-mono select-none">
       {/* Primary Retro Controls (Matching Screenshot Aesthetic) */}
       <div className="flex items-center justify-center gap-5 sm:gap-8">
-        {/* Jump 01:49 Highlight */}
+        {/* Restart 0:00 Button */}
         <button
           type="button"
           onClick={onJumpHighlight}
-          className="group px-2.5 py-1.5 border border-white/30 hover:border-yellow-400 bg-black/60 rounded text-xs text-neutral-300 hover:text-yellow-300 transition-all flex items-center gap-1 active:scale-90"
-          title="Restart at 01:49 snippet"
+          className="group px-2.5 py-1.5 border border-white/30 hover:border-white bg-black/60 rounded text-xs text-neutral-300 hover:text-white transition-all flex items-center gap-1 active:scale-90"
+          title="Restart from 00:00"
         >
           <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-45 transition-transform" />
-          <span className="hidden sm:inline font-bold">1:49</span>
+          <span className="hidden sm:inline font-bold">0:00</span>
         </button>
 
         {/* Previous / -5s */}

@@ -5,7 +5,6 @@ import React, { useRef } from "react";
 interface RetroProgressBarProps {
   currentTime: number;
   duration: number;
-  highlightTime?: number; // e.g. 109s (01:49)
   onSeek: (time: number) => void;
   className?: string;
 }
@@ -20,14 +19,12 @@ function formatTime(seconds: number): string {
 export const RetroProgressBar: React.FC<RetroProgressBarProps> = ({
   currentTime,
   duration,
-  highlightTime = 109,
   onSeek,
   className = "",
 }) => {
   const barRef = useRef<HTMLDivElement | null>(null);
 
   const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
-  const highlightPercent = duration > 0 ? Math.min(100, (highlightTime / duration) * 100) : 0;
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!barRef.current || duration <= 0) return;
@@ -66,15 +63,6 @@ export const RetroProgressBar: React.FC<RetroProgressBarProps> = ({
             <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_2px,rgba(0,0,0,0.4)_2px,rgba(0,0,0,0.4)_4px)]" />
           </div>
 
-          {/* Highlight Marker at 01:49 */}
-          {highlightPercent > 0 && (
-            <div
-              className="absolute top-0 bottom-0 w-1 bg-yellow-400/90 shadow-[0_0_8px_#facc15] z-10 pointer-events-none"
-              style={{ left: `${highlightPercent}%` }}
-              title="Iconic Snippet (01:49)"
-            />
-          )}
-
           {/* Cursor Head Indicator */}
           <div
             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-5 bg-white border border-black shadow-[0_0_8px_rgba(255,255,255,0.8)] scale-90 group-hover:scale-110 transition-transform pointer-events-none"
@@ -83,21 +71,19 @@ export const RetroProgressBar: React.FC<RetroProgressBarProps> = ({
         </div>
       </div>
 
-      {/* Time Display and 01:49 Highlight Tag */}
+      {/* Time Display */}
       <div className="flex justify-between items-center text-xs tracking-widest text-neutral-400 font-mono px-1">
         <span className="text-white font-bold tracking-wider drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">
           {formatTime(currentTime)}
         </span>
 
-        {/* Quick jump to 01:49 badge */}
         <button
           type="button"
-          onClick={() => onSeek(highlightTime)}
-          className="text-[10px] tracking-wider px-2 py-0.5 rounded border border-white/30 hover:border-yellow-400 hover:text-yellow-300 text-neutral-300 transition-all bg-white/5 flex items-center gap-1 active:scale-95"
-          title="Jump to highlight: 01:49"
+          onClick={() => onSeek(0)}
+          className="text-[10px] tracking-wider px-2 py-0.5 rounded border border-white/20 hover:border-white text-neutral-400 hover:text-white transition-all bg-white/5 flex items-center gap-1 active:scale-95"
+          title="Restart from 00:00"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-          HIGHLIGHT (01:49)
+          <span>↻ RESTART</span>
         </button>
 
         <span>{formatTime(duration)}</span>
