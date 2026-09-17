@@ -140,19 +140,22 @@ export const AsciiVideoBackground: React.FC<AsciiVideoBackgroundProps> = ({
 
             const lum = 0.299 * red + 0.587 * green + 0.114 * blue;
 
+            // Threshold out dark hair / deep background shadows
             if (lum > 18) {
+              // Gamma curve boost for skin tones and midtones (makes face luminous white)
+              const normalized = Math.max(0, Math.min(1, (lum - 12) / 220));
+              const boosted = Math.pow(normalized, 0.5) * 255;
+
               const charIdx = Math.min(
                 rampLen - 1,
-                Math.floor((lum / 255) * rampLen)
+                Math.floor((boosted / 255) * rampLen)
               );
               const char = ASCII_CHARS[charIdx];
 
               if (char !== " ") {
-                if (red > green + 30 && red > blue + 30) {
-                  ctx.fillStyle = `rgba(255, 140, 150, ${Math.min(1, lum / 200)})`;
-                } else {
-                  ctx.fillStyle = `rgba(240, 245, 255, ${Math.min(1, lum / 220)})`;
-                }
+                // Bright, crisp white phosphor glow for skin and face
+                const alpha = Math.min(1, Math.max(0.6, boosted / 180));
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
 
                 ctx.fillText(char, c * cellWidth, r * cellHeight);
               }
